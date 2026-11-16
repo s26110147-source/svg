@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>雲端心電感應｜術式展開・多人默契領域</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: 思源黑體 & 思源宋體 營造咒術日系質感 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'sans-serif'],
+            serif: ['"Noto Serif TC"', 'serif'],
+          },
+          colors: {
+            void: {
+              950: '#020617',
+              900: '#050d21',
+              800: '#0a1938',
+            },
+            cursed: {
+              cyan: '#00f0ff',
+              blue: '#2563eb',
+              electric: '#38bdf8',
+              deep: '#1d4ed8',
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'spin-slow': 'spin 18s linear infinite',
+            'spin-reverse': 'spinReverse 24s linear infinite',
+            'float': 'float 4s ease-in-out infinite',
+          },
+          keyframes: {
+            spinReverse: {
+              '0%': { transform: 'rotate(360deg)' },
+              '100%': { transform: 'rotate(0deg)' },
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-6px)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* 全局深淵暗藍背景與自訂捲軸 */
+    body {
+      background-color: #020617;
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(14, 116, 144, 0.25) 0%, transparent 60%),
+        radial-gradient(circle at 85% 85%, rgba(29, 78, 216, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 15% 75%, rgba(0, 240, 255, 0.12) 0%, transparent 45%);
+      color: #f8fafc;
+      overflow-x: hidden;
+    }
+
+    /* 咒力發光文字與邊框特效 */
+    .cursed-text-glow {
+      text-shadow: 0 0 10px rgba(0, 240, 255, 0.7), 0 0 24px rgba(37, 99, 235, 0.85);
+    }
+
+    .cursed-box-glow {
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.15), inset 0 0 18px rgba(37, 99, 235, 0.2);
+    }
+
+    .cursed-btn-glow {
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.45), 0 4px 12px rgba(2, 6, 23, 0.8);
+      transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .cursed-btn-glow:hover:not(:disabled) {
+      box-shadow: 0 0 26px rgba(0, 240, 255, 0.8), 0 6px 18px rgba(37, 99, 235, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .cursed-btn-glow:active:not(:disabled) {
+      transform: translateY(0px) scale(0.98);
+    }
+
+    /* 3D 翻牌容器與動畫核心 */
+    .perspective-container {
+      perspective: 1200px;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.85s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transform-style: preserve-3d;
+    }
+
+    /* 當卡片加上 .is-flipped 類別時觸發 180 度 3D 翻轉 */
+    .flip-card-inner.is-flipped {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-front,
+    .flip-card-back {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+
+    /* 牌背（預設朝上：0deg） */
+    .flip-card-back {
+      transform: rotateY(0deg);
+      background: linear-gradient(145deg, #071330 0%, #030816 100%);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    /* 牌面（翻開後朝上：180deg） */
+    .flip-card-front {
+      transform: rotateY(180deg);
+      background: linear-gradient(155deg, #0b2252 0%, #06122e 65%, #020817 100%);
+      border: 1.5px solid rgba(0, 240, 255, 0.75);
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.25);
+    }
+
+    /* 咒術符文幾何底紋 */
+    .seal-pattern {
+      background-image: radial-gradient(rgba(0, 240, 255, 0.14) 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+
+    /* 領域展開全螢幕閃光特效 */
+    @keyframes domainFlash {
+      0% { opacity: 0.85; transform: scale(0.95); }
+      100% { opacity: 0; transform: scale(1.15); }
+    }
+    .domain-flash-overlay {
+      animation: domainFlash 0.9s ease-out forwards;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative selection:bg-cyan-500 selection:text-slate-950">
+
+  <!-- 背景咒力粒子畫布 -->
+  <canvas id="cursedCanvas" class="fixed inset-0 w-full h-full pointer-events-none z-0"></canvas>
+
+  <!-- 領域展開瞬發視覺特效層 -->
+  <div id="domainFlashLayer" class="hidden fixed inset-0 z-50 bg-gradient-to-r from-cyan-500/30 via-blue-600/40 to-cyan-400/30 backdrop-blur-sm"></div>
+
+  <!-- 頂部訊息提示條 (Toast Notification，取代 alert) -->
+  <div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none w-11/12 max-w-md"></div>
+
+  <!-- 頂部導覽列 -->
+  <header class="relative z-20 border-b border-cyan-500/20 bg-slate-950/75 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- 品牌標題 -->
+      <div class="flex items-center gap-3">
+        <div class="relative w-10 h-10 flex items-center justify-center rounded-xl bg-blue-950/90 border border-cyan-400/50 shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+          <!-- 六眼/無量空處幾何 SVG -->
+          <svg class="w-6 h-6 text-cyan-300 animate-spin-slow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="12" cy="12" r="9" stroke-dasharray="4 2" />
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v20M2 12h20" stroke-opacity="0.5" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-serif font-black text-lg sm:text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-blue-400 cursed-text-glow">
+              雲端心電感應
+            </h1>
+            <span class="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-cyan-950/90 border border-cyan-500/40 text-cyan-300 font-medium tracking-widest">
+              術式・蒼
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden sm:block">多人咒力共鳴與領域默契同步系統</p>
+        </div>
+      </div>
+
+      <!-- 房間資訊與同步狀態 (進入房間後顯示) -->
+      <div id="headerRoomControls" class="hidden flex items-center gap-2 sm:gap-3">
+        <!-- 同步狀態指示燈 -->
+        <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900/90 border border-blue-500/30 text-xs">
+          <span id="syncDot" class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+          <span id="syncText" class="text-cyan-200/90 font-medium hidden md:inline">結界同步中</span>
+        </div>
+
+        <!-- 房號顯示與複製按鈕 -->
+        <button onclick="copyRoomInvite()" title="點擊複製房號與邀請連結"
+          class="group flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-950/80 hover:bg-blue-900/80 border border-cyan-400/40 transition text-xs sm:text-sm">
+          <span class="text-slate-400">結界號:</span>
+          <span id="displayRoomCode" class="font-mono font-bold text-cyan-300 tracking-wider">----</span>
+          <svg class="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+        </button>
+
+        <!-- 離開房間 -->
+        <button onclick="leaveRoom()" title="退出目前結界"
+          class="px-2.5 py-1.5 rounded-lg bg-slate-900/80 hover:bg-rose-950/70 border border-slate-700 hover:border-rose-500/50 text-slate-300 hover:text-rose-200 text-xs transition">
+          退出
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主要內容區 -->
+  <main class="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-6 sm:py-10 w-full max-w-6xl mx-auto">
+
+    <!-- ==================== 畫面 1：結界登入與房號分流大廳 ==================== -->
+    <section id="lobbyView" class="w-full max-w-md">
+      <div class="relative rounded-2xl bg-slate-950/85 border border-cyan-500/35 p-6 sm:p-8 backdrop-blur-xl cursed-box-glow seal-pattern">
+        <!-- 四角咒符裝飾線 -->
+        <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-cyan-400/70 rounded-tl"></div>
+        <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-cyan-400/70 rounded-tr"></div>
+        <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-cyan-400/70 rounded-bl"></div>
+        <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-cyan-400/70 rounded-br"></div>
+
+        <div class="text-center mb-6">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-950/80 border border-cyan-400/50 mb-3 shadow-[0_0_25px_rgba(0,240,255,0.25)]">
+            <svg class="w-9 h-9 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c4.97 0 9 4.03 9 9s-4.03 9-9 9-9-4.03-9-9 4.03-9 9-9z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 7v10M7 12h10" />
+              <circle cx="12" cy="12" r="2.5" fill="currentColor" />
+            </svg>
+          </div>
+          <h2 class="font-serif text-2xl font-black text-white tracking-wide">締結咒力契約</h2>
+          <p class="text-xs sm:text-sm text-cyan-200/70 mt-1">輸入術師代號與結界房號，與夥伴同步意識</p>
+        </div>
+
+        <form id="joinForm" onsubmit="handleJoinRoom(event)" class="space-y-4">
+          <!-- 玩家名稱 -->
+          <div>
+            <label for="playerNameInput" class="block text-xs font-bold uppercase tracking-wider text-cyan-300 mb-1.5">
+              術師代號（玩家名稱）
+            </label>
+            <input id="playerNameInput" type="text" required maxlength="16" placeholder="例如：五條悟、伏黑惠..."
+              class="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-blue-500/40 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder-slate-500 outline-none transition" />
+          </div>
+
+          <!-- 房間代碼分流設定 -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="roomCodeInput" class="block text-xs font-bold uppercase tracking-wider text-cyan-300">
+                結界領域編號（房號分流）
+              </label>
+              <button type="button" onclick="generateNewRoomCode()"
+                class="text-xs text-cyan-400 hover:text-cyan-200 underline underline-offset-2 flex items-center gap-1 transition">
+                <span>✦ 自動生成新房號</span>
+              </button>
+            </div>
+            <div class="flex gap-2">
+              <input id="roomCodeInput" type="text" required maxlength="12" placeholder="輸入房號或點擊生成"
+                class="flex-1 px-4 py-3 rounded-xl bg-slate-900/90 border border-blue-500/40 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-cyan-200 font-mono font-bold tracking-widest uppercase placeholder-slate-500 placeholder:font-sans placeholder:font-normal placeholder:tracking-normal outline-none transition" />
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1.5">
+              同組同學輸入相同房號即可進入同一結界，互不干擾。
+            </p>
+          </div>
+
+          <!-- 登入時可選擇是否直接開啟房主身份 -->
+          <div class="pt-1">
+            <label class="flex items-center justify-between p-3 rounded-xl bg-blue-950/40 border border-blue-500/25 cursor-pointer hover:border-cyan-400/40 transition">
+              <div class="flex items-center gap-2.5">
+                <span class="text-cyan-400 text-base">❖</span>
+                <div>
+                  <div class="text-xs font-bold text-slate-200">我是本局特級術師（房主）</div>
+                  <div class="text-[11px] text-slate-400">可控制出題、開牌與重置（進入後亦可隨時隱藏）</div>
+                </div>
+              </div>
+              <input id="isHostCheckbox" type="checkbox" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer" />
+            </label>
+          </div>
+
+          <button type="submit"
+            class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700 hover:from-blue-500 hover:to-cyan-500 text-white font-bold tracking-widest text-sm sm:text-base cursed-btn-glow flex items-center justify-center gap-2 mt-2">
+            <span>進入結界領域</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ==================== 畫面 2：遊戲主舞台 ==================== -->
+    <section id="gameView" class="hidden w-full space-y-6">
+
+      <!-- 頂部狀態與題目橫幅 -->
+      <div class="relative rounded-2xl bg-slate-950/85 border border-cyan-500/40 p-5 sm:p-7 backdrop-blur-xl cursed-box-glow overflow-hidden">
+        <!-- 背景裝飾光暈 -->
+        <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-cyan-500/15 blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col items-center text-center">
+          <!-- 階段徽章 -->
+          <div id="phaseBadge" class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-950/90 border border-cyan-400/50 text-cyan-300 text-xs font-bold tracking-widest mb-3">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span id="phaseBadgeText">結界構築中</span>
+          </div>
+
+          <!-- 題目顯示區 -->
+          <div id="questionContainer" class="w-full max-w-3xl">
+            <h2 id="currentQuestionText" class="font-serif text-xl sm:text-3xl md:text-4xl font-black text-white leading-snug tracking-wide">
+              等待特級術師（房主）展開領域並發布題目...
+            </h2>
+          </div>
+
+          <!-- 默契度分析橫幅（僅在 revealed 狀態顯示） -->
+          <div id="telepathyResultBanner" class="hidden mt-4 w-full max-w-2xl rounded-xl bg-gradient-to-r from-blue-950/90 via-cyan-950/90 to-blue-950/90 border border-cyan-400/60 px-4 py-3 shadow-[0_0_20px_rgba(0,240,255,0.25)]">
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+              <span id="telepathyRankBadge" class="px-3 py-1 rounded-lg bg-cyan-400 text-slate-950 font-black text-xs sm:text-sm tracking-wider">
+                無量空處
+              </span>
+              <p id="telepathySummaryText" class="text-sm sm:text-base font-bold text-cyan-100">
+                心電感應同步率計算中...
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 玩家作答區（僅在 playing 狀態顯示） -->
+      <div id="answerInputCard" class="hidden max-w-2xl mx-auto w-full rounded-2xl bg-slate-900/85 border border-blue-500/40 p-5 sm:p-6 backdrop-blur-md shadow-xl">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-bold text-cyan-300 tracking-wider flex items-center gap-1.5">
+            <span>✦ 術師：</span>
+            <span id="activePlayerLabel" class="text-white underline decoration-cyan-400/60"></span>
+          </span>
+          <span id="myAnswerStatusBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+            尚未注入答案
+          </span>
+        </div>
+
+        <form onsubmit="handleSubmitAnswer(event)" class="flex flex-col sm:flex-row gap-3">
+          <input id="playerAnswerInput" type="text" required maxlength="40" placeholder="輸入你心中的第一直覺答案..."
+            class="flex-1 px-4 py-3 rounded-xl bg-slate-950/90 border border-cyan-500/40 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder-slate-500 outline-none text-base transition" />
+          <button id="submitAnswerBtn" type="submit"
+            class="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold tracking-wider text-sm sm:text-base cursed-btn-glow whitespace-nowrap">
+            注入咒力・鎖定
+          </button>
+        </form>
+      </div>
+
+      <!-- 玩家卡牌矩陣區（展示所有已作答玩家與 3D 翻牌動畫） -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between px-1">
+          <h3 class="text-sm sm:text-base font-bold text-cyan-200 tracking-wider flex items-center gap-2">
+            <span>領域內術師感應狀態</span>
+            <span id="playerCountBadge" class="px-2.5 py-0.5 rounded-full bg-blue-950 border border-cyan-500/40 text-cyan-300 text-xs font-mono">
+              0 人已就緒
+            </span>
+          </h3>
+          <span id="flipHintText" class="text-xs text-slate-400">
+            開牌時將全體同步觸發 3D 翻轉
+          </span>
+        </div>
+
+        <!-- 空狀態提示 -->
+        <div id="emptyPlayersState" class="rounded-2xl border border-dashed border-blue-500/30 bg-slate-950/40 py-12 px-4 text-center">
+          <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-blue-950/70 border border-cyan-500/30 flex items-center justify-center text-cyan-400 animate-pulse">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </div>
+          <p class="text-sm text-slate-300 font-medium">目前尚無術師注入答案</p>
+          <p class="text-xs text-slate-500 mt-1">出題後，所有填答者的咒力卡牌將會即時顯現於此</p>
+        </div>
+
+        <!-- 3D 卡牌網格容器 -->
+        <div id="cardsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-5">
+          <!-- 動態生成 3D 翻轉卡牌 -->
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ==================== 隱藏的房主控制台按鈕（浮動於右下角，極低調咒印設計） ==================== -->
+  <button id="secretHostTrigger" onclick="toggleHostConsole()" title="隱藏房主控制台 (快捷鍵 Alt+H)"
+    class="fixed bottom-4 right-4 z-40 w-11 h-11 rounded-full bg-slate-950/60 hover:bg-blue-950/90 border border-cyan-500/20 hover:border-cyan-400/70 text-cyan-500/40 hover:text-cyan-300 backdrop-blur-md flex items-center justify-center transition-all duration-300 shadow-lg group">
+    <!-- 咒術結界小圖騰 -->
+    <svg class="w-5 h-5 group-hover:rotate-90 transition-transform duration-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <polygon points="12 2 22 12 12 22 2 12 12 2" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  </button>
+
+  <!-- ==================== 隱藏式房主控制台面板（Drawer / Modal） ==================== -->
+  <aside id="hostConsolePanel"
+    class="hidden fixed bottom-16 right-4 left-4 sm:left-auto sm:w-96 z-40 rounded-2xl bg-slate-950/95 border border-cyan-400/60 p-5 backdrop-blur-2xl shadow-[0_0_40px_rgba(0,240,255,0.28)] transition-all">
+    <div class="flex items-center justify-between border-b border-cyan-500/25 pb-3 mb-4">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+        <h3 class="font-serif font-bold text-cyan-300 text-base tracking-wider">特級術師・房主控制台</h3>
+      </div>
+      <button onclick="toggleHostConsole(false)" title="隱藏控制台（防窺屏）"
+        class="text-xs px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition">
+        隱藏面板 ✕
+      </button>
+    </div>
+
+    <div class="space-y-4">
+      <!-- 步驟 1：出題並開始回合 -->
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label for="hostQuestionInput" class="text-xs font-bold text-cyan-200">
+            1. 設定本回合默契題目
+          </label>
+          <button type="button" onclick="fillRandomPresetQuestion()"
+            class="text-[11px] text-cyan-400 hover:text-cyan-200 underline">
+            🎲 隨機靈感題庫
+          </button>
+        </div>
+        <textarea id="hostQuestionInput" rows="2" placeholder="輸入題目，例如：提到『藍色』第一個想到的角色或事物？"
+          class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-blue-500/40 focus:border-cyan-400 text-sm text-white placeholder-slate-500 outline-none resize-none"></textarea>
+        <button onclick="hostSetQuestion()"
+          class="mt-2 w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-xs sm:text-sm tracking-wider cursed-btn-glow">
+          發布題目・開始作答 (Playing)
+        </button>
+      </div>
+
+      <!-- 步驟 2 & 3：開牌與重置 -->
+      <div class="grid grid-cols-2 gap-2.5 pt-2 border-t border-slate-800">
+        <button onclick="hostRevealCards()"
+          class="py-3 px-3 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-700 hover:from-cyan-400 hover:to-blue-600 text-slate-950 font-black text-xs sm:text-sm tracking-wider shadow-[0_0_20px_rgba(0,240,255,0.45)] transition transform active:scale-95">
+          ⚡ 領域展開・開牌
+        </button>
+        <button onclick="hostResetRoom()"
+          class="py-3 px-3 rounded-xl bg-slate-900 hover:bg-rose-950/80 border border-slate-700 hover:border-rose-500/50 text-slate-300 hover:text-rose-200 font-bold text-xs sm:text-sm tracking-wider transition">
+          ↺ 清空重置本局
+        </button>
+      </div>
+
+      <p class="text-[11px] text-slate-400 leading-relaxed">
+        提示：點擊右上角「隱藏面板」或按 <kbd class="px-1.5 py-0.5 bg-slate-800 rounded text-cyan-300">Alt+H</kbd> 可隨時收起控制台，避免投影時劇透題目。
+      </p>
+    </div>
+  </aside>
+
+  <!-- 頁尾資訊 -->
+  <footer class="relative z-10 text-center py-3 text-[11px] text-slate-500 border-t border-slate-900/80">
+    雲端心電感應系統 • 術式「蒼」多列結界分流架構
+  </footer>
+
+  <!-- ==================== 核心邏輯腳本 ==================== -->
+  <script>
+    // ==========================================
+    // 1. GAS API 常數與全域狀態管理
+    // ==========================================
+    const SHEET_NAME = 'TelepathyData';
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwppSwg05mVBAVKlffK0fxxOa_nzviEJLvG0Nkc8Ezt-fmzzLFLdvauRug7Fn71fD7F/exec";
+
+    const state = {
+      roomCode: "",
+      playerName: "",
+      isHostConsoleOpen: false,
+      pollingTimer: null,
+      isPosting: false, // 防止 POST 期間被舊的 GET 輪詢覆蓋狀態
+      lastStatus: "setup",
+      lastQuestion: "",
+      lastAnswers: {},
+      localSubmittedAnswer: "",
+    };
+
+    // 預設靈感題庫（方便房主一鍵出題）
+    const PRESET_QUESTIONS = [
+      "說到『藍色』，你第一個聯想到什麼？",
+      "如果可以擁有一種超能力，你最想選哪一種？",
+      "宵夜只能選一樣食物，你會點什麼？",
+      "世界末日來臨前，最後一刻你想做什麼事？",
+      "最能代表『台灣』的一樣小吃是什麼？",
+      "如果中了樂透頭獎一億元，第一件事要買什麼？",
+      "大家公認最容易遲到的生活藉口是什麼？",
+      "去無人島只能帶三樣東西，第一樣必帶什麼？",
+      "哪一種動物最能代表我們班（或這群朋友）的性格？",
+      "說到『咒術迴戰』裡最強的角色，你會寫誰？"
+    ];
+
+    // ==========================================
+    // 2. 初始化與 URL 參數解析 (?room=XXXX 自動帶入)
+    // ==========================================
+    window.addEventListener("DOMContentLoaded", () => {
+      initCursedParticles();
+
+      // 檢查網址是否帶有 ?room= 參數，方便同學點擊分享連結直接分流
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomFromUrl = urlParams.get("room");
+      if (roomFromUrl) {
+        document.getElementById("roomCodeInput").value = roomFromUrl.trim().toUpperCase();
+      }
+
+      // 恢復上次儲存的玩家名稱（提升體驗）
+      const savedName = localStorage.getItem("telepathy_player_name");
+      if (savedName) {
+        document.getElementById("playerNameInput").value = savedName;
+      }
+
+      // 快捷鍵 Alt + H 切換隱藏房主控制台
+      window.addEventListener("keydown", (e) => {
+        if (e.altKey && (e.key === "h" || e.key === "H")) {
+          e.preventDefault();
+          toggleHostConsole();
+        }
+      });
+    });
+
+    // ==========================================
+    // 3. 房間分流與登入邏輯
+    // ==========================================
+    function generateNewRoomCode() {
+      // 生成具備咒術感的 5 碼隨機房號 (例如: B7429)
+      const digits = Math.floor(1000 + Math.random() * 9000);
+      const code = `B${digits}`;
+      const input = document.getElementById("roomCodeInput");
+      input.value = code;
+      // 自動勾選房主權限（開房者通常為房主，亦可手動取消）
+      document.getElementById("isHostCheckbox").checked = true;
+      showToast(`已生成新結界房號：${code}`, "cyan");
+    }
+
+    function handleJoinRoom(event) {
+      event.preventDefault();
+      const nameInput = document.getElementById("playerNameInput").value.trim();
+      const roomInput = document.getElementById("roomCodeInput").value.trim().toUpperCase();
+      const wantHost = document.getElementById("isHostCheckbox").checked;
+
+      if (!nameInput || !roomInput) {
+        showToast("請完整輸入術師代號與結界房號！", "error");
+        return;
+      }
+
+      state.playerName = nameInput;
+      state.roomCode = roomInput;
+      state.lastStatus = "setup";
+      state.lastAnswers = {};
+      state.localSubmittedAnswer = "";
+
+      localStorage.setItem("telepathy_player_name", nameInput);
+
+      // 更新網址列參數但不重新整理頁面
+      const newUrl = `${window.location.pathname}?room=${encodeURIComponent(state.roomCode)}`;
+      window.history.replaceState({}, "", newUrl);
+
+      // 切換介面至遊戲主舞台
+      document.getElementById("lobbyView").classList.add("hidden");
+      document.getElementById("gameView").classList.remove("hidden");
+      document.getElementById("headerRoomControls").classList.remove("hidden");
+      document.getElementById("displayRoomCode").textContent = state.roomCode;
+      document.getElementById("activePlayerLabel").textContent = state.playerName;
+
+      // 若勾選房主，則開啟隱藏房主控制台
+      if (wantHost) {
+        toggleHostConsole(true);
+      } else {
+        toggleHostConsole(false);
+      }
+
+      showToast(`已進入結界領域【${state.roomCode}】`, "cyan");
+
+      // 立即抓取一次房間最新狀態，並啟動 setInterval 輪詢機制
+      fetchRoomState();
+      startPolling();
+    }
+
+    function leaveRoom() {
+      stopPolling();
+      state.roomCode = "";
+      toggleHostConsole(false);
+
+      document.getElementById("gameView").classList.add("hidden");
+      document.getElementById("headerRoomControls").classList.add("hidden");
+      document.getElementById("lobbyView").classList.remove("hidden");
+
+      // 清除網址列參數
+      window.history.replaceState({}, "", window.location.pathname);
+      showToast("已解除結界連線", "info");
+    }
+
+    function copyRoomInvite() {
+      const shareUrl = `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(state.roomCode)}`;
+      const copyText = `【雲端心電感應】結界房號：${state.roomCode}\n點擊連結直接加入：${shareUrl}`;
+
+      // 使用相容 iFrame 的 document.execCommand('copy') 機制
+      const tempInput = document.createElement("textarea");
+      tempInput.value = copyText;
+      tempInput.style.position = "fixed";
+      tempInput.style.opacity = "0";
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      try {
+        document.execCommand("copy");
+        showToast(`已複製房號【${state.roomCode}】與邀請連結！`, "cyan");
+      } catch (err) {
+        showToast(`房號為：${state.roomCode}`, "info");
+      }
+      document.body.removeChild(tempInput);
+    }
+
+    // ==========================================
+    // 4. 隱藏房主控制台邏輯
+    // ==========================================
+    function toggleHostConsole(forceState) {
+      const panel = document.getElementById("hostConsolePanel");
+      if (typeof forceState === "boolean") {
+        state.isHostConsoleOpen = forceState;
+      } else {
+        state.isHostConsoleOpen = !state.isHostConsoleOpen;
+      }
+
+      if (state.isHostConsoleOpen) {
+        panel.classList.remove("hidden");
+      } else {
+        panel.classList.add("hidden");
+      }
+    }
+
+    function fillRandomPresetQuestion() {
+      const randomQ = PRESET_QUESTIONS[Math.floor(Math.random() * PRESET_QUESTIONS.length)];
+      document.getElementById("hostQuestionInput").value = randomQ;
+    }
+
+    // ==========================================
+    // 5. GAS 後端 API 串接 (GET 輪詢 & POST 指令)
+    // ==========================================
+    function startPolling() {
+      stopPolling();
+      // 每 2.5 秒向 Google Apps Script 輪詢最新房間資料
+      state.pollingTimer = setInterval(() => {
+        if (!state.isPosting && state.roomCode) {
+          fetchRoomState();
+        }
+      }, 2500);
+    }
+
+    function stopPolling() {
+      if (state.pollingTimer) {
+        clearInterval(state.pollingTimer);
+        state.pollingTimer = null;
+      }
+    }
+
+    async function fetchRoomState() {
+      if (!state.roomCode) return;
+
+      const syncDot = document.getElementById("syncDot");
+      const syncText = document.getElementById("syncText");
+
+      try {
+        const url = `${GAS_API_URL}?room=${encodeURIComponent(state.roomCode)}&t=${Date.now()}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("網路回應異常");
+
+        const data = await response.json();
+        // data 格式: { status: "setup" | "playing" | "revealed", question: "", answers: {} }
+        syncDot.className = "w-2 h-2 rounded-full bg-cyan-400 animate-ping";
+        syncText.textContent = "結界同步中";
+
+        renderGameState(data);
+      } catch (error) {
+        console.error("輪詢同步失敗:", error);
+        syncDot.className = "w-2 h-2 rounded-full bg-amber-400";
+        syncText.textContent = "重試連線中...";
+      }
+    }
+
+    async function postGameAction(payload) {
+      if (!state.roomCode) return;
+      state.isPosting = true;
+
+      try {
+        const fullPayload = {
+          room: state.roomCode,
+          ...payload
+        };
+
+        // 使用 text/plain 避免觸發 GAS 不支援的 CORS OPTIONS Preflight，同時 GAS 的 JSON.parse(e.postData.contents) 可正常解析
+        const response = await fetch(GAS_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(fullPayload)
+        });
+
+        const result = await response.json();
+        if (result && result.success) {
+          // 立即抓取最新狀態更新畫面
+          await fetchRoomState();
+        }
+      } catch (error) {
+        console.error("發送指令失敗:", error);
+        showToast("咒力傳輸受阻，請稍後再試", "error");
+      } finally {
+        state.isPosting = false;
+      }
+    }
+
+    // 房主操作 1：發布題目 (set_question)
+    async function hostSetQuestion() {
+      const qInput = document.getElementById("hostQuestionInput");
+      const question = qInput.value.trim();
+      if (!question) {
+        showToast("請先輸入要發布的題目！", "error");
+        return;
+      }
+
+      showToast("正在展開領域並發布題目...", "cyan");
+      state.localSubmittedAnswer = "";
+      document.getElementById("playerAnswerInput").value = "";
+
+      // 樂觀更新本地狀態
+      renderGameState({
+        status: "playing",
+        question: question,
+        answers: {}
+      });
+
+      await postGameAction({
+        action: "set_question",
+        question: question
+      });
+    }
+
+    // 房主操作 2：全體開牌 (reveal)
+    async function hostRevealCards() {
+      if (Object.keys(state.lastAnswers).length === 0) {
+        showToast("目前還沒有任何術師填答喔！", "error");
+        return;
+      }
+
+      showToast("領域展開・全體術式開牌！", "cyan");
+      // 樂觀觸發翻牌
+      renderGameState({
+        status: "revealed",
+        question: state.lastQuestion,
+        answers: state.lastAnswers
+      });
+
+      await postGameAction({
+        action: "reveal"
+      });
+    }
+
+    // 房主操作 3：清空重置 (reset)
+    async function hostResetRoom() {
+      showToast("正在解除領域並清空資料...", "info");
+      state.localSubmittedAnswer = "";
+      document.getElementById("playerAnswerInput").value = "";
+      document.getElementById("hostQuestionInput").value = "";
+
+      renderGameState({
+        status: "setup",
+        question: "",
+        answers: {}
+      });
+
+      await postGameAction({
+        action: "reset"
+      });
+    }
+
+    // 玩家操作：送出答案 (submit_answer)
+    async function handleSubmitAnswer(event) {
+      event.preventDefault();
+      const ansInput = document.getElementById("playerAnswerInput");
+      const answer = ansInput.value.trim();
+      if (!answer) {
+        showToast("請輸入你心中的直覺答案！", "error");
+        return;
+      }
+
+      const btn = document.getElementById("submitAnswerBtn");
+      btn.disabled = true;
+      btn.textContent = "咒力注入中...";
+
+      state.localSubmittedAnswer = answer;
+
+      // 樂觀更新自己的卡牌出現在列表中
+      const optimisticAnswers = {
+        ...state.lastAnswers,
+        [state.playerName]: answer
+      };
+      renderGameState({
+        status: "playing",
+        question: state.lastQuestion,
+        answers: optimisticAnswers
+      });
+
+      await postGameAction({
+        action: "submit_answer",
+        playerName: state.playerName,
+        answer: answer
+      });
+
+      btn.disabled = false;
+      btn.textContent = "修改咒力答案";
+      showToast("答案已封印至結界中！", "cyan");
+    }
+
+    // ==========================================
+    // 6. 畫面渲染與 3D 翻牌同步引擎
+    // ==========================================
+    function renderGameState(data) {
+      const status = data.status || "setup";
+      const question = data.question || "";
+      const answers = data.answers || {};
+
+      const isJustRevealed = (state.lastStatus !== "revealed" && status === "revealed");
+
+      // 更新狀態文字與題目橫幅
+      const phaseBadgeText = document.getElementById("phaseBadgeText");
+      const currentQuestionText = document.getElementById("currentQuestionText");
+      const answerInputCard = document.getElementById("answerInputCard");
+      const telepathyResultBanner = document.getElementById("telepathyResultBanner");
+
+      if (status === "setup") {
+        phaseBadgeText.textContent = "結界構築中・等待出題";
+        currentQuestionText.textContent = "等待特級術師（房主）展開領域並發布題目...";
+        currentQuestionText.className = "font-serif text-lg sm:text-2xl font-bold text-slate-400 tracking-wide";
+        answerInputCard.classList.add("hidden");
+        telepathyResultBanner.classList.add("hidden");
+        state.localSubmittedAnswer = "";
+      } else if (status === "playing") {
+        phaseBadgeText.textContent = "心電感應・術式填答中";
+        currentQuestionText.textContent = question || "（無題目內容）";
+        currentQuestionText.className = "font-serif text-xl sm:text-3xl md:text-4xl font-black text-white cursed-text-glow leading-snug tracking-wide";
+        answerInputCard.classList.remove("hidden");
+        telepathyResultBanner.classList.add("hidden");
+
+        // 更新自己是否已作答的狀態徽章與按鈕文字
+        const myBadge = document.getElementById("myAnswerStatusBadge");
+        const submitBtn = document.getElementById("submitAnswerBtn");
+        const myServerAnswer = answers[state.playerName];
+
+        if (myServerAnswer || state.localSubmittedAnswer) {
+          const shownAns = myServerAnswer || state.localSubmittedAnswer;
+          myBadge.textContent = `已封印：「${shownAns}」`;
+          myBadge.className = "text-xs px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/50";
+          if (!submitBtn.disabled) {
+            submitBtn.textContent = "修改咒力答案";
+          }
+        } else {
+          myBadge.textContent = "尚未注入答案";
+          myBadge.className = "text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700";
+          if (!submitBtn.disabled) {
+            submitBtn.textContent = "注入咒力・鎖定";
+          }
+        }
+      } else if (status === "revealed") {
+        phaseBadgeText.textContent = "領域展開・全體開牌";
+        currentQuestionText.textContent = question || "（本局題目）";
+        currentQuestionText.className = "font-serif text-xl sm:text-3xl md:text-4xl font-black text-cyan-200 cursed-text-glow leading-snug tracking-wide";
+        answerInputCard.classList.add("hidden");
+
+        // 觸發全螢幕領域展開閃光特效
+        if (isJustRevealed) {
+          triggerDomainExpansionFlash();
+        }
+
+        // 計算並顯示心電感應默契度
+        calculateAndRenderTelepathy(answers);
+      }
+
+      // 渲染玩家 3D 卡牌網格
+      renderPlayerCards(answers, status, isJustRevealed);
+
+      // 紀錄本次狀態供下次比對
+      state.lastStatus = status;
+      state.lastQuestion = question;
+      state.lastAnswers = answers;
+    }
+
+    function renderPlayerCards(answers, status, isJustRevealed) {
+      const grid = document.getElementById("cardsGrid");
+      const emptyState = document.getElementById("emptyPlayersState");
+      const countBadge = document.getElementById("playerCountBadge");
+      const playerEntries = Object.entries(answers);
+
+      countBadge.textContent = `${playerEntries.length} 人已就緒`;
+
+      if (playerEntries.length === 0) {
+        emptyState.classList.remove("hidden");
+        grid.innerHTML = "";
+        return;
+      }
+
+      emptyState.classList.add("hidden");
+
+      // 計算每個答案出現次數，用於開牌後標示「默契一致」高光
+      const answerCounts = {};
+      playerEntries.forEach(([_, ans]) => {
+        const normalized = String(ans).trim().toLowerCase();
+        answerCounts[normalized] = (answerCounts[normalized] || 0) + 1;
+      });
+
+      // 檢查是否需要重建卡片 DOM（當玩家名單增減或重設時）
+      const existingPlayerNames = Array.from(grid.children).map(el => el.dataset.player);
+      const newPlayerNames = playerEntries.map(([name]) => name);
+      const isSameRoster =
+        existingPlayerNames.length === newPlayerNames.length &&
+        existingPlayerNames.every((val, idx) => val === newPlayerNames[idx]);
+
+      if (!isSameRoster) {
+        grid.innerHTML = "";
+        playerEntries.forEach(([playerName, answer], index) => {
+          const cardWrapper = createCardElement(playerName, answer, index, answerCounts);
+          grid.appendChild(cardWrapper);
+        });
+      } else {
+        // 名單相同時，直接更新牌面文字與共鳴徽章，確保 CSS 3D 過渡動畫流暢不中斷
+        playerEntries.forEach(([playerName, answer], index) => {
+          const cardWrapper = grid.children[index];
+          const answerTextEl = cardWrapper.querySelector(".revealed-answer-text");
+          const matchBadgeEl = cardWrapper.querySelector(".match-status-badge");
+
+          answerTextEl.textContent = answer;
+
+          const normalized = String(answer).trim().toLowerCase();
+          const count = answerCounts[normalized] || 1;
+          if (count > 1) {
+            matchBadgeEl.textContent = `✦ 默契共鳴 (${count}人)`;
+            matchBadgeEl.classList.remove("hidden");
+          } else {
+            matchBadgeEl.classList.add("hidden");
+          }
+        });
+      }
+
+      // 控制 3D 翻轉狀態：revealed 時加上 .is-flipped（並加入波浪階梯延遲）
+      Array.from(grid.children).forEach((cardWrapper, idx) => {
+        const inner = cardWrapper.querySelector(".flip-card-inner");
+        if (status === "revealed") {
+          if (isJustRevealed) {
+            inner.style.transitionDelay = `${idx * 120}ms`;
+          } else {
+            inner.style.transitionDelay = "0ms";
+          }
+          requestAnimationFrame(() => {
+            inner.classList.add("is-flipped");
+          });
+        } else {
+          inner.style.transitionDelay = "0ms";
+          inner.classList.remove("is-flipped");
+        }
+      });
+    }
+
+    function createCardElement(playerName, answer, index, answerCounts) {
+      const isMe = playerName === state.playerName;
+      const normalized = String(answer).trim().toLowerCase();
+      const count = answerCounts[normalized] || 1;
+
+      const wrapper = document.createElement("div");
+      wrapper.dataset.player = playerName;
+      wrapper.className = "perspective-container h-48 sm:h-56 w-full select-none";
+
+      wrapper.innerHTML = `
+        <div class="flip-card-inner">
+          <!-- ===== 牌背（封印狀態） ===== -->
+          <div class="flip-card-back p-4 flex flex-col items-center justify-between shadow-lg">
+            <div class="w-full flex items-center justify-between text-[11px]">
+              <span class="font-mono text-cyan-400/70">#0${index + 1}</span>
+              ${isMe
+                ? '<span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 font-bold">你</span>'
+                : '<span class="text-slate-500">術師</span>'}
+            </div>
+
+            <!-- 咒術幾何法陣圖騰 -->
+            <div class="relative w-16 h-16 flex items-center justify-center">
+              <div class="absolute inset-0 rounded-full border border-dashed border-cyan-400/60 animate-spin-slow"></div>
+              <div class="absolute inset-1.5 rounded-full border border-blue-400/40 animate-spin-reverse"></div>
+              <div class="w-10 h-10 rounded-full bg-blue-950/90 border border-cyan-400/70 flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.35)]">
+                <span class="font-serif font-black text-cyan-300 text-base">封</span>
+              </div>
+            </div>
+
+            <div class="w-full text-center">
+              <div class="font-bold text-sm sm:text-base text-white truncate px-1">${escapeHtml(playerName)}</div>
+              <div class="text-[11px] text-cyan-400/85 mt-0.5 tracking-wider">已注入咒力・封印中</div>
+            </div>
+          </div>
+
+          <!-- ===== 牌面（開牌揭曉） ===== -->
+          <div class="flip-card-front p-4 flex flex-col items-center justify-between">
+            <div class="w-full flex items-center justify-between gap-1">
+              <span class="text-xs font-bold text-cyan-200 truncate max-w-[58%]">${escapeHtml(playerName)}</span>
+              <span class="match-status-badge ${count > 1 ? '' : 'hidden'} text-[10px] px-2 py-0.5 rounded-full bg-cyan-400 text-slate-950 font-black whitespace-nowrap">
+                ✦ 默契共鳴 (${count}人)
+              </span>
+            </div>
+
+            <!-- 揭曉的答案主體 -->
+            <div class="flex-1 flex items-center justify-center w-full px-1 my-2">
+              <p class="revealed-answer-text font-serif font-black text-xl sm:text-2xl text-white cursed-text-glow break-words leading-tight">
+                ${escapeHtml(answer)}
+              </p>
+            </div>
+
+            <div class="w-full pt-1.5 border-t border-cyan-400/25 flex items-center justify-center">
+              <span class="text-[10px] tracking-[0.2em] text-cyan-300/80 uppercase">術式開示</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      return wrapper;
+    }
+
+    // 計算全場默契一致率並顯示咒術等級評語
+    function calculateAndRenderTelepathy(answers) {
+      const banner = document.getElementById("telepathyResultBanner");
+      const rankBadge = document.getElementById("telepathyRankBadge");
+      const summaryText = document.getElementById("telepathySummaryText");
+
+      const values = Object.values(answers).map(v => String(v).trim().toLowerCase()).filter(Boolean);
+      const total = values.length;
+
+      if (total === 0) {
+        banner.classList.add("hidden");
+        return;
+      }
+
+      banner.classList.remove("hidden");
+
+      if (total === 1) {
+        rankBadge.textContent = "單獨領域";
+        rankBadge.className = "px-3 py-1 rounded-lg bg-slate-800 text-cyan-300 border border-cyan-500/40 font-black text-xs sm:text-sm tracking-wider";
+        summaryText.textContent = "目前僅有一位術師作答，快邀請更多夥伴加入連線！";
+        return;
+      }
+
+      // 統計最高相同答案人數
+      const freq = {};
+      let maxCount = 0;
+      let topAnswerOriginal = "";
+
+      Object.values(answers).forEach(orig => {
+        const key = String(orig).trim().toLowerCase();
+        freq[key] = (freq[key] || 0) + 1;
+        if (freq[key] > maxCount) {
+          maxCount = freq[key];
+          topAnswerOriginal = orig;
+        }
+      });
+
+      const matchRate = Math.round((maxCount / total) * 100);
+
+      if (maxCount === total) {
+        rankBadge.textContent = "【無量空處】100% 同步";
+        rankBadge.className = "px-3 py-1 rounded-lg bg-cyan-300 text-slate-950 font-black text-xs sm:text-sm tracking-wider shadow-[0_0_15px_rgba(0,240,255,0.8)]";
+        summaryText.textContent = `全員心電感應完美一致！答案都是「${topAnswerOriginal}」！`;
+      } else if (maxCount >= 2) {
+        rankBadge.textContent = `黑閃共鳴・默契度 ${matchRate}%`;
+        rankBadge.className = "px-3 py-1 rounded-lg bg-blue-500 text-white font-black text-xs sm:text-sm tracking-wider shadow-[0_0_12px_rgba(59,130,246,0.6)]";
+        summaryText.textContent = `共有 ${maxCount} / ${total} 位術師同時想到了「${topAnswerOriginal}」！`;
+      } else {
+        rankBadge.textContent = "術式順轉・各自展開";
+        rankBadge.className = "px-3 py-1 rounded-lg bg-slate-800 text-cyan-300 border border-cyan-500/40 font-black text-xs sm:text-sm tracking-wider";
+        summaryText.textContent = `全員 ${total} 人答案完全不同，各自展開了獨立領域！`;
+      }
+    }
+
+    // 領域展開瞬間全螢幕藍光閃爍特效
+    function triggerDomainExpansionFlash() {
+      const layer = document.getElementById("domainFlashLayer");
+      layer.classList.remove("hidden");
+      layer.classList.remove("domain-flash-overlay");
+      void layer.offsetWidth; // 強制 reflow 重新觸發動畫
+      layer.classList.add("domain-flash-overlay");
+      setTimeout(() => {
+        layer.classList.add("hidden");
+      }, 950);
+    }
+
+    // ==========================================
+    // 7. 工具函式 (Toast 提示、防 XSS 跳脫、背景咒力粒子)
+    // ==========================================
+    function showToast(message, type = "cyan") {
+      const container = document.getElementById("toastContainer");
+      const toast = document.createElement("div");
+
+      let colorClasses = "bg-slate-900/95 border-cyan-400/70 text-cyan-100 shadow-[0_0_20px_rgba(0,240,255,0.3)]";
+      if (type === "error") {
+        colorClasses = "bg-rose-950/95 border-rose-500/80 text-rose-100 shadow-[0_0_20px_rgba(244,63,94,0.35)]";
+      } else if (type === "info") {
+        colorClasses = "bg-slate-900/95 border-blue-500/60 text-blue-200";
+      }
+
+      toast.className = `px-4 py-2.5 rounded-xl border backdrop-blur-md text-xs sm:text-sm font-bold tracking-wide transition-all duration-300 transform translate-y-0 opacity-100 ${colorClasses}`;
+      toast.textContent = message;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add("opacity-0", "-translate-y-2");
+        setTimeout(() => toast.remove(), 300);
+      }, 2800);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // 背景漂浮藍色咒力粒子動畫
+    function initCursedParticles() {
+      const canvas = document.getElementById("cursedCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      let particles = [];
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+      const particleCount = Math.min(45, Math.floor(window.innerWidth / 28));
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 2.2 + 0.8,
+          speedY: -(Math.random() * 0.6 + 0.2),
+          speedX: (Math.random() - 0.5) * 0.35,
+          alpha: Math.random() * 0.6 + 0.2,
+          isCyan: Math.random() > 0.35
+        });
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        particles.forEach(p => {
+          p.y += p.speedY;
+          p.x += p.speedX;
+
+          if (p.y < -10) {
+            p.y = canvas.height + 10;
+            p.x = Math.random() * canvas.width;
+          }
+          if (p.x < -10) p.x = canvas.width + 10;
+          if (p.x > canvas.width + 10) p.x = -10;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = p.isCyan
+            ? `rgba(0, 240, 255, ${p.alpha})`
+            : `rgba(59, 130, 246, ${p.alpha})`;
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = p.isCyan ? "#00f0ff" : "#2563eb";
+          ctx.fill();
+        });
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    }
+  </script>
+</body>
+</html>
